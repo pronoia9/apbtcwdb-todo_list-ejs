@@ -18,7 +18,9 @@ app.get("/", function(req, res) {
 app.post("/", function(req, res) {
   item = req.body.newItem;
   console.log("Post request received: '" + item + "'");
-  items.push(item);
+  if (item !== "") {
+    items.push(item);
+  }
 
   res.redirect("/");
 });
