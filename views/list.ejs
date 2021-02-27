@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
+<%- include('header'); -%>
 
-<head>
-  <meta charset="utf-8">
-  <title>To Do List</title>
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-
-<body>
   <div class="box" id="heading">
     <h1><%= listTitle %></h1>
   </div>
@@ -27,10 +19,5 @@
       <button type="submit" name="list" value=<%= listTitle %>>+</button>
     </form>
   </div>
-</body>
 
-<footer>
-  Copyright &copy 2021 Jay Ansin
-</footer>
-
-</html>
+<%- include('footer'); -%>
