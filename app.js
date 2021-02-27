@@ -1,20 +1,25 @@
+/////////////////////////////////// MODULES ////////////////////////////////////
 const bodyParser = require('body-parser');
 const express = require('express');
 const https = require('https');
 
-const app = express();
+const date = require(__dirname + '/date.js');
 
-let items = ["Buy Food", "Cook Food", "Eat Food"];
-let workItems = [];
+const app = express();
+////////////////////////////////////////////////////////////////////////////////
+
+
+const items = ["Buy Food", "Cook Food", "Eat Food"];
+const workItems = [];
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+
 ///////////./////////////////////////// / //////////////////////////////////////
 app.get("/", function(req, res) {
-  let day = currentDate();
-  res.render('list', { listTitle: day, items: items });
+  res.render('list', { listTitle: date.getDate(), items: items });
 });
 
 app.post("/", function(req, res) {
@@ -31,7 +36,6 @@ app.post("/", function(req, res) {
       res.redirect("/");
     }
   }
-
 });
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,16 +64,3 @@ app.get("/about", function(req, res) {
 
 
 app.listen(process.env.PORT || 3000, () => console.log("Server is running..."));
-
-
-////////////////////////////////// FUNCTIONS //.////////////////////////////////
-function currentDate() {
-  let today = new Date();
-  let options = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  };
-  return today.toLocaleDateString("en-US", options);
-}
-////////////////////////////////////////////////////////////////////////////////
