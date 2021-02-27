@@ -4,20 +4,21 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-//app.use(express.static("public"));
+app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
+//app.use(express.static("public"));
 
 app.get("/", function(req, res) {
   var today = new Date();
   var currentDay = today.getDay();
+  var day = "";
 
   if (currentDay === 6 || currentDay === 0) {
-    res.write("<h1>Yay it's the weekend!</h1>");
+    day = "Weekend";
   } else {
-    res.sendFile(__dirname + "/index.html");
+    day = "Weekday";
   }
+  res.render('list', {day: day});
 });
 
-app.listen(process.env.PORT || 3000, function() {
-  console.log("Server is running...");
-});
+app.listen(process.env.PORT || 3000, () => console.log("Server is running..."));
