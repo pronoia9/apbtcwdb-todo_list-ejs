@@ -4,7 +4,7 @@ const https = require('https');
 
 const app = express();
 
-var item = "";
+var items = [];
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -19,12 +19,13 @@ app.get("/", function(req, res) {
   };
   var day = today.toLocaleDateString("en-US", options);
 
-  res.render('list', { day: day, item: item });
+  res.render('list', { day: day, items: items });
 });
 
 app.post("/", function(req, res) {
   item = req.body.newItem;
-  console.log("Post request received... (" + item + ")");
+  console.log("Post request received:" + item);
+  items.push(item);
 
   res.redirect("/");
 });

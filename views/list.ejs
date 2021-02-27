@@ -13,7 +13,11 @@
     <li>Buy Food</li>
     <li>Cook Food</li>
     <li>Eat Food</li>
-    <li><%= item %></li>
+    <% if (items.length >= 0) { %>
+      <% for (var i = 0; i < items.length; i++) { %>
+        <li><%= items[i] %></li>
+      <% } %>
+    <% } %>
   </ul>
 
   <form class="" action="/" method="post">
