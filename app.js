@@ -11,14 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 app.get("/", function(req, res) {
-  let today = new Date();
-  let options = {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  };
-  let day = today.toLocaleDateString("en-US", options);
-
+  let day = currentDate();
   res.render('list', { day: day, items: items });
 });
 
@@ -31,3 +24,13 @@ app.post("/", function(req, res) {
 });
 
 app.listen(process.env.PORT || 3000, () => console.log("Server is running..."));
+
+function currentDate() {
+  let today = new Date();
+  let options = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long'
+  };
+  return today.toLocaleDateString("en-US", options);
+}
