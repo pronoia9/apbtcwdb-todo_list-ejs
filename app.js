@@ -30,7 +30,7 @@ const itemsSchema = new mongoose.Schema({
 const listSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Item name missing! Please enter some text."]
+    required: [true, "List name missing! Please enter some text."]
   },
   items: [itemsSchema]
 });
@@ -50,7 +50,8 @@ app.get("/", function(req, res) {
       if (items.length === 0) {
         initDefaultList();
         res.redirect("/");
-      } else {
+      }
+      else {
         res.render('list', { listTitle: "Today", items: items });
       }
     } catch (e) { console.log("** ERROR IN APP.GET('/') **" + e); }
@@ -69,12 +70,12 @@ app.post("/", function(req, res) {
 
     if (listName === "Today") {
       // add the new item to the collection
-      item.save().then(() => console.log("Successfully added an item:   '" + item.name + "'"));
+      item.save().then(() => console.log("Successfully added an item to the default list: '" + item.name + "'"));
 
       res.redirect("/");
     }
     else {
-      List.findOne({name: listName}, function(err, list) {
+      List.findOne({ name: listName }, function(err, list) {
         list.items.push(item);
         list.save();
         res.redirect("/" + listName);
@@ -87,52 +88,27 @@ app.post("/", function(req, res) {
 
 ///////////////////////////////////  DELETE  ///////////////////////////////////
 app.post("/delete", function(req, res) {
-  // get the _id of the item
-  const checkedItem = req.body.checkbox;
+  const checkedItem = req.body.id;
+  const listName = req.body.list;
 
-  Item.findByIdAndDelete(checkedItem, function(err) {
-    if (err) {
-      console.log("** ERROR IN APP.POST('/DELETE') **" + err);
-    }
-    else {
-      console.log("Successfully removed an item: '" + checkedItem + "'");
-    }
-    res.redirect("/");
-  });
-});
-
-app.post("/delete/:customList", function(req, res) {
-  const customList = req.params.customList;
-  const checkedItem = req.body.checkbox;
-
-  List.findOne({name: customList}, function(err, list) {
-    if (err) {
-      console.log("** ERROR APP.POST('/DELETE/:CUSTOMLIST') **" + err);
-      res.redirect("/" + customList);
-    }
-    else {
-      list.findByIdAndDelete(checkedItem, function(e) {
-        if (e) {
-          console.log("** ERROR APP.POST('/DELETE/:CUSTOMLIST') **" + e);
-          res.redirect("/" + customList);
-        }
-        else {
-          console.log("Successfully removed an item: '" + checkedItem + "'");
-          res.redirect("/" + customList);
+  try {
+    if (listName === "Today") {
+      Item.findByIdAndDelete(checkedItem, function(err) {
+        if (!err) {
+          console.log("Successfully removed an item from the default list: '" + checkedItem + "'");
+          res.redirect("/");
         }
       });
     }
-  });
-
-  // Item.findByIdAndDelete(checkedItem, function(err) {
-  //   if (err) {
-  //     console.log("** ERROR IN APP.POST('/DELETE') **" + err);
-  //   }
-  //   else {
-  //     console.log("Successfully removed an item: '" + checkedItem + "'");
-  //   }
-  //   res.redirect("/");
-  // });
+    else {
+      List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItem } } }, function(err, list) {
+        if (!err) {
+          console.log("Successfully removed an item from the list" + listName + ": '" + checkedItem + "'");
+          res.redirect("/" + listName);
+        }
+      });
+    }
+  } catch (e) { console.log("** ERROR IN APP.POST('/DELETE') **" + e); }
 });
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -141,24 +117,20 @@ app.post("/delete/:customList", function(req, res) {
 app.get("/:customList", function(req, res) {
   const customList = req.params.customList;
 
-  //initCustomList(customList);
-  List.findOne({name: customList}, function(err, list) {
+  // Look for an existing document
+  List.findOne({ name: customList }, function(err, list) {
     if (!err) {
       if (!list) {
-        console.log("List '" + customList + "' does not exist!");
-
-        // Create a new list
+        // If there are no previous lists, create a new list
         const list = new List ({
           name: customList,
-          items: getLoremIpsumListItems()
+          items: getStartingListItems()
         });
         list.save();
         res.redirect("/" + customList);
       }
       else {
-        console.log("List '" + customList + "' found!");
-
-        // Show an existing list
+        // Show the existing list
         res.render('list', { listTitle: customList, items: list.items });
       }
     }
@@ -167,15 +139,6 @@ app.get("/:customList", function(req, res) {
       res.redirect("/");
     }
   });
-});
-
-app.post("/:customList", function(req, res) {
-  // let item = req.body.newItem;
-  // if (item !== "") {
-  //   workItems.push(item);
-  // }
-  //
-  // res.redirect("/work");
 });
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -205,20 +168,6 @@ function getStartingListItems() {
   return [item1, item2, item3];
 }
 
-function getLoremIpsumListItems() {
-  // Create default documents
-  const item1 = new Item({
-    name: "Lorem ipsum dolor sit amet"
-  });
-  const item2 = new Item({
-    name: "Consectetur adipiscing elit"
-  });
-  const item3 = new Item({
-    name: "Duis id erat congue"
-  });
-  return [item1, item2, item3];
-}
-
 function initDefaultList() {
   // Insert default itemsSchema
   Item.insertMany(getStartingListItems(), function(err) {
@@ -228,38 +177,5 @@ function initDefaultList() {
       console.log("Successfully added default items to the list.");
     }
   });
-}
-
-function initCustomList(customName) {
-  const list = new List ({
-    name: customName,
-    items: getLoremIpsumListItems()
-  });
-  list.save();
-
-  // List.findOne({name: customList}, function(err, list) {
-  //   if (!err) {
-  //     if (!list) {
-  //       console.log("List '" + customList + "' does not exist!");
-  //
-  //       // Create a new list
-  //       const list = new List ({
-  //         name: customList,
-  //         items: getLoremIpsumListItems()
-  //       });
-  //       list.save();
-  //     }
-  //     else {
-  //       console.log("List '" + customList + "' found!");
-  //
-  //       // Show an existing list
-  //       res.render('list', { listTitle: customList, items: list.items });
-  //     }
-  //   }
-  //   else {
-  //     console.log("** ERROR IN APP.GET('/:CUSTOMLIST') **" + err);
-  //     res.redirect("/");
-  //   }
-  // });
 }
 ////////////////////////////////////////////////////////////////////////////////
