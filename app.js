@@ -58,16 +58,28 @@ app.get("/", function(req, res) {
 });
 
 app.post("/", function(req, res) {
+  const newItem = req.body.newItem;
+  const listName = req.body.list;
+
   try {
     // get new item from user
     const item = new Item ({
-      name: req.body.newItem
+      name: newItem
     });
 
-    // add the new item to the collection
-    item.save().then(() => console.log("Successfully added an item:   '" + item.name + "'"));
+    if (listName === "Today") {
+      // add the new item to the collection
+      item.save().then(() => console.log("Successfully added an item:   '" + item.name + "'"));
 
-    res.redirect("/");
+      res.redirect("/");
+    }
+    else {
+      List.findOne({name: listName}, function(err, list) {
+        list.items.push(item);
+        list.save();
+        res.redirect("/" + listName);
+      });
+    }
   } catch (e) { console.log("** ERROR IN APP.POST('/') **" + e); }
 });
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +99,40 @@ app.post("/delete", function(req, res) {
     }
     res.redirect("/");
   });
+});
+
+app.post("/delete/:customList", function(req, res) {
+  const customList = req.params.customList;
+  const checkedItem = req.body.checkbox;
+
+  List.findOne({name: customList}, function(err, list) {
+    if (err) {
+      console.log("** ERROR APP.POST('/DELETE/:CUSTOMLIST') **" + err);
+      res.redirect("/" + customList);
+    }
+    else {
+      list.findByIdAndDelete(checkedItem, function(e) {
+        if (e) {
+          console.log("** ERROR APP.POST('/DELETE/:CUSTOMLIST') **" + e);
+          res.redirect("/" + customList);
+        }
+        else {
+          console.log("Successfully removed an item: '" + checkedItem + "'");
+          res.redirect("/" + customList);
+        }
+      });
+    }
+  });
+
+  // Item.findByIdAndDelete(checkedItem, function(err) {
+  //   if (err) {
+  //     console.log("** ERROR IN APP.POST('/DELETE') **" + err);
+  //   }
+  //   else {
+  //     console.log("Successfully removed an item: '" + checkedItem + "'");
+  //   }
+  //   res.redirect("/");
+  // });
 });
 ////////////////////////////////////////////////////////////////////////////////
 
