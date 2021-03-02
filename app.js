@@ -16,8 +16,10 @@ app.use(express.static("public"));
 
 
 ///////////////////////////////////  MONGODB  //////////////////////////////////
-const db = "todoDB";
-const url = "mongodb://localhost:27017/" + db;
+const usr = "admin-jay";
+const pwd = "Test123"
+const db = "todolistDB"
+const url = "mongodb+srv://" + usr + ":" + pwd + "@cluster0.lphdq.mongodb.net/" + db;
 
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -133,7 +135,7 @@ app.get("/:customList", function(req, res) {
       }
       else {
         // Show the existing list
-        res.render('list', { listTitle: customList, items: list.items });
+        res.render('list', { listTitle: foundList.name, items: foundList.items });
       }
     }
     else {
