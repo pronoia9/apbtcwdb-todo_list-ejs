@@ -2,6 +2,7 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const https = require('https');
+const _ = require('lodash');
 const mongoose = require('mongoose');
 
 const app = express();
@@ -9,6 +10,7 @@ const app = express();
 
 
 app.set('view engine', 'ejs');
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
@@ -115,12 +117,12 @@ app.post("/delete", function(req, res) {
 
 ////////////////////////////////  :/CUSTOMLIST  ////////////////////////////////
 app.get("/:customList", function(req, res) {
-  const customList = req.params.customList;
+  const customList = _.capitalize(req.params.customList);
 
   // Look for an existing document
-  List.findOne({ name: customList }, function(err, list) {
+  List.findOne({ name: customList }, function(err, foundList) {
     if (!err) {
-      if (!list) {
+      if (!foundList) {
         // If there are no previous lists, create a new list
         const list = new List ({
           name: customList,
